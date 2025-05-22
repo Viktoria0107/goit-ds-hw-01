@@ -1,17 +1,21 @@
+# 1. Базовий образ
+FROM python:3.12-slim
 
-# Базовий образ
-FROM python:3.13-slim
-
-# Робоча директорія в контейнері
+# 2. Робоча директорія всередині контейнера
 WORKDIR /app
 
-# Копіюємо файли проєкту
-COPY . /app
+# 3. Копіюємо файли, необхідні для встановлення залежностей
+COPY pyproject.toml poetry.lock ./
 
-# Встановлюємо залежності (poetry + залежності з pyproject.toml)
-RUN pip install poetry && \
-    poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi
+# 4. Встановлюємо Poetry
+RUN pip install poetry
 
-# Команда запуску
-CMD ["python", "bot.py"]
+# 5. Інсталюємо залежності (без створення додаткового venv)
+RUN poetry config virtualenvs.create false \
+ && poetry install --no-interaction --no-ansi --no-root
+
+# 6. Копіюємо весь проєкт
+COPY . .
+
+# 7. Точка входу — запускаємо твій CLI-скрипт
+ENTRYPOINT ["python", "bot.py"]
